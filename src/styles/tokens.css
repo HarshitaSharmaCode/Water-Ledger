@@ -1,0 +1,76 @@
+:root {
+  /* ─── Blue-Navy Palette ──────────────────────────────────── */
+  --color-primary:         #0A1931;   /* Deep navy — buttons, active states */
+  --color-primary-hover:   #04111E;   /* Deeper navy on hover */
+  --color-secondary:       #1A3D63;   /* Dark blue — secondary actions */
+  --color-accent:          #4A7FA7;   /* Mid blue — highlights, focus rings, accents */
+  --color-accent-light:    #B3CFE5;   /* Light steel blue — tags, chips, subtle fills */
+
+  --color-bg:              #F6FAFD;   /* Near-white blue tint — page background */
+  --color-surface:         #FFFFFF;   /* Card / modal surface */
+  --color-surface-alt:     #EEF5FB;   /* Input bg / alt surface — blue-tinted off-white */
+
+  --color-border:          #D0E4F2;   /* Soft blue-grey dividers */
+  --color-border-strong:   #B3CFE5;   /* Stronger border, separators */
+
+  --color-text:            #0A1931;   /* Primary text — deep navy */
+  --color-text-muted:      #1A3D63;   /* Secondary / label text */
+  --color-text-subtle:     #4A7FA7;   /* Placeholder / very muted */
+
+  /* ─── Semantic Colours ───────────────────────────────────── */
+  --color-error:           #C0392B;
+  --color-success:         #0A1931;
+  --color-warning:         #1A3D63;
+
+  /* ─── Ledger Status Tags ─────────────────────────────────── */
+  --color-pending:         #4A7FA7;   /* Pending balance — mid blue */
+  --color-advance:         #0A1931;   /* Advance balance — deep navy */
+
+  /* ─── Typography ─────────────────────────────────────────── */
+  --font-family:          'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-xs:         0.6875rem;  /* 11px */
+  --font-size-sm:         0.8125rem;  /* 13px */
+  --font-size-md:         0.9375rem;  /* 15px */
+  --font-size-base:       1rem;       /* 16px */
+  --font-size-lg:         1.125rem;   /* 18px */
+  --font-size-xl:         1.375rem;   /* 22px */
+  --font-size-2xl:        1.625rem;   /* 26px */
+  --font-size-3xl:        2rem;       /* 32px */
+  --font-size-4xl:        2.5rem;     /* 40px */
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-black:    900;
+
+  /* ─── Spacing ────────────────────────────────────────────── */
+  --spacing-1:   0.25rem;    /*  4px */
+  --spacing-2:   0.5rem;     /*  8px */
+  --spacing-3:   0.75rem;    /* 12px */
+  --spacing-4:   1rem;       /* 16px */
+  --spacing-5:   1.375rem;   /* 22px */
+  --spacing-6:   1.75rem;    /* 28px */
+  --spacing-8:   2.25rem;    /* 36px */
+  --spacing-10:  3rem;       /* 48px */
+  --spacing-12:  4rem;       /* 64px */
+  --spacing-16:  5rem;       /* 80px */
+
+  /* ─── Border Radii ───────────────────────────────────────── */
+  --radius-sm:      4px;
+  --radius-button:  10px;
+  --radius-card:    16px;
+  --radius-input:   10px;
+  --radius-modal:   20px;
+  --radius-pill:    9999px;
+
+  /* ─── Shadows ────────────────────────────────────────────── */
+  --shadow-xs:    0 1px 3px rgba(10, 25, 49, 0.06);
+  --shadow-card:  0 2px 8px rgba(10, 25, 49, 0.08), 0 0 0 1px rgba(10, 25, 49, 0.05);
+  --shadow-modal: 0 12px 40px rgba(10, 25, 49, 0.14), 0 0 0 1px rgba(10, 25, 49, 0.07);
+  --shadow-pop:   0 6px 20px rgba(10, 25, 49, 0.12);
+
+  /* ─── Transitions ────────────────────────────────────────── */
+  --transition-fast:   120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow:   320ms ease;
+}

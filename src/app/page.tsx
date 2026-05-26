@@ -1,65 +1,250 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Droplet, Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import { AuthService } from '@/services/auth.service';
+import { ROUTES } from '@/constants';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+
+export const Home: React.FC = () => {
+  const t = useTranslations('Auth');
+  const router = useRouter();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (AuthService.isAuthenticated()) {
+      router.push(ROUTES.DASHBOARD);
+    }
+  }, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await AuthService.login(email, password);
+      router.push(ROUTES.DASHBOARD);
+    } catch (err: any) {
+      setError(err.message || 'invalidCredentials');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div
+      className="flex flex-col flex-1 min-h-screen"
+      style={{
+        background: 'linear-gradient(135deg, #0A1931 0%, #1A3D63 50%, #0A1931 100%)',
+      }}
+    >
+      {/* Subtle radial glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(74,127,167,0.18) 0%, transparent 70%)',
+        }}
+      />
+
+      {/* Language toggle — top right */}
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageToggle />
+      </div>
+
+      {/* Content wrapper — spacing tokens: --spacing-8=2.25rem(px-8), --spacing-10=3rem(py-10), --spacing-16=5rem(py-16) */}
+      <div className="relative flex-1 flex flex-col items-center justify-center px-5 sm:px-8 py-10 sm:py-16">
+
+        {/* Login Card */}
+        <div
+          className="w-full max-w-sm overflow-hidden"
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #D0E4F2',
+            borderRadius: '20px',
+            boxShadow: '0 12px 40px rgba(10,25,49,0.22), 0 0 0 1px rgba(10,25,49,0.07)',
+          }}
+        >
+          {/* Card top stripe */}
+          <div
+            style={{
+              height: '4px',
+              background: 'linear-gradient(90deg, #0A1931, #4A7FA7, #B3CFE5)',
+            }}
+          />
+
+          <div className="flex flex-col gap-7 px-8 py-9">
+
+            {/* Brand */}
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div
+                className="flex items-center justify-center w-14 h-14 text-white"
+                style={{
+                  background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 16px rgba(10,25,49,0.35)',
+                }}
+              >
+                <Droplet className="w-7 h-7 fill-current" />
+              </div>
+              <div>
+                <h1
+                  className="text-lg font-bold leading-tight tracking-tight"
+                  style={{ color: '#0A1931' }}
+                >
+                  {t('title')}
+                </h1>
+                <p
+                  className="text-xs font-semibold mt-1 tracking-widest uppercase"
+                  style={{ color: '#4A7FA7' }}
+                >
+                  {t('subtitle')}
+                </p>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+              {/* Error Banner */}
+              {error && (
+                <div
+                  className="px-4 py-3 rounded-xl text-xs font-semibold"
+                  style={{
+                    background: '#FEF2F2',
+                    border: '1px solid #FECACA',
+                    color: '#C0392B',
+                  }}
+                >
+                  {t(error)}
+                </div>
+              )}
+
+              {/* Email */}
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="email"
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: '#1A3D63' }}
+                >
+                  {t('email')}
+                </label>
+                <div className="relative">
+                  <span
+                    className="absolute inset-y-0 left-0 pl-3.5 flex items-center"
+                    style={{ color: '#4A7FA7' }}
+                  >
+                    <Mail className="w-4 h-4" />
+                  </span>
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    placeholder="operator@tanker.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input input-icon-left"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="password"
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: '#1A3D63' }}
+                >
+                  {t('password')}
+                </label>
+                <div className="relative">
+                  <span
+                    className="absolute inset-y-0 left-0 pl-3.5 flex items-center"
+                    style={{ color: '#4A7FA7' }}
+                  >
+                    <Lock className="w-4 h-4" />
+                  </span>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input input-icon-left input-icon-right"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer transition-colors"
+                    style={{ color: '#4A7FA7' }}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-full mt-1"
+              >
+                {loading ? t('signingIn') : t('login')}
+              </button>
+            </form>
+
+            {/* Demo credentials hint */}
+            <div
+              className="px-5 py-4 rounded-xl text-center"
+              style={{
+                background: '#EEF5FB',
+                border: '1px solid #D0E4F2',
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <span
+                className="text-[10px] font-bold uppercase tracking-widest block mb-1.5"
+                style={{ color: '#4A7FA7' }}
+              >
+                Demo Credentials
+              </span>
+              <code
+                className="text-xs block select-all"
+                style={{ color: '#1A3D63' }}
+              >
+                operator@tanker.com
+              </code>
+              <code
+                className="text-xs block select-all mt-0.5"
+                style={{ color: '#1A3D63' }}
+              >
+                password123
+              </code>
+            </div>
+
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Footer text */}
+        <p
+          className="mt-6 text-xs font-medium text-center"
+          style={{ color: 'rgba(179,207,229,0.7)' }}
+        >
+          The Indian Water Tanker · Operator Portal
+        </p>
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
