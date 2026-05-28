@@ -1,39 +1,67 @@
 // src/services/payment.service.ts
-// Service layer managing client payment logs.
+// Supabase service layer for payment operations.
+// Per global-rules.md: ALL Supabase calls live here only. No store imports.
 
+import { supabase, getAuthUserId } from '@/lib/supabase';
 import { Payment } from '@/types/payment.types';
-import { usePaymentStore } from '@/store/payment.store';
 
 export const PaymentService = {
   /**
-   * Fetches payments associated with a specific client.
+   * Fetches all payments for a specific client, sorted by payment_date descending.
    */
   getPaymentsByClient: async (clientId: string): Promise<Payment[]> => {
-    return new Promise((resolve) => {
-      const payments = usePaymentStore.getState().getPaymentsByClient(clientId);
-      resolve(payments);
-    });
+    const { data, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('payment_date', { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Payment[];
+  },
+
+
+  /*
+   * Returns total payments received today (IST) across all user-scoped clients.
+   * Used by the dashboard "Received Today" stat card.
+   */
+  getTodayTotal: async (): Promise<number> => {
+    const userId = await getAuthUserId();
+
+    const { data: clientData, error: clientError } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (clientError) throw new Error(clientError.message);
+    const clientIds = (clientData ?? []).map((c: { id: string }) => c.id);
+    if (clientIds.length === 0) return 0;
+
+    const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+    const { data, error } = await supabase
+      .from('payments')
+      .select('amount')
+      .in('client_id', clientIds)
+      .eq('payment_date', todayIST);
+
+    if (error) throw new Error(error.message);
+    return (data ?? []).reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
   },
 
   /**
-   * Logs a new payment from a client.
+   * Logs a new lump-sum payment in Supabase.
    */
   createPayment: async (
     payment: Omit<Payment, 'id' | 'created_at'>
   ): Promise<Payment> => {
-    return new Promise((resolve) => {
-      const newPayment = usePaymentStore.getState().addPayment(payment);
-      resolve(newPayment);
-    });
-  },
+    const { data, error } = await supabase
+      .from('payments')
+      .insert(payment)
+      .select()
+      .single();
 
-  /**
-   * Deletes a recorded payment transaction.
-   */
-  deletePayment: async (id: string): Promise<void> => {
-    return new Promise((resolve) => {
-      usePaymentStore.getState().deletePayment(id);
-      resolve();
-    });
+    if (error) throw new Error(error.message);
+    return data as Payment;
   },
 };

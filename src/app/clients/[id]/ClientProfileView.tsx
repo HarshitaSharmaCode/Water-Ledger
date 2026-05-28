@@ -38,9 +38,9 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({ params }) 
     if (!profile) { router.push(ROUTES.CLIENTS); return; }
     setClient(profile);
 
-    const orders   = await OrderService.getOrdersByClient(clientId);
+    const orders = await OrderService.getOrdersByClient(clientId);
     const payments = await PaymentService.getPaymentsByClient(clientId);
-    const ledger   = calculateLedger(orders, payments);
+    const ledger = calculateLedger(orders, payments);
     setRecentEntries(ledger.entries.reverse().slice(0, 3));
     setLoading(false);
   };
@@ -68,10 +68,10 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({ params }) 
   /* Balance card background based on state */
   const balanceBg =
     client.balance_type === 'pending'
-      ? 'linear-gradient(135deg, #0A1931 0%, #1A3D63 100%)'
+      ? 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)'
       : client.balance_type === 'advance'
-      ? 'linear-gradient(135deg, #1A3D63 0%, #4A7FA7 100%)'
-      : '#FFFFFF';
+        ? 'linear-gradient(135deg, #059669 0%, #10B981 100%)'
+        : '#FFFFFF';
   const balanceBorder =
     client.balance_type === 'zero' ? '#D0E4F2' : 'transparent';
 
@@ -207,8 +207,8 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({ params }) 
               {client.balance_type === 'pending'
                 ? t('pendingLabel')
                 : client.balance_type === 'advance'
-                ? t('advanceLabel')
-                : t('zeroLabel')}
+                  ? t('advanceLabel')
+                  : t('zeroLabel')}
             </span>
           </div>
         </div>
@@ -302,9 +302,9 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({ params }) 
                           isOrder
                             ? { background: '#EEF5FB', color: '#4A7FA7' }
                             : {
-                                background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
-                                color: '#FFFFFF',
-                              }
+                              background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                              color: '#FFFFFF',
+                            }
                         }
                       >
                         {isOrder

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppLanguageProvider } from "@/components/ui/AppLanguageProvider";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Water Tanker Khata Ledger",
-  description: "Internal CRM + Khata ledger for water tanker supply business",
+  title: "Water Tanker Khata",
+  description: "CRM + Khata ledger for water tanker supply business",
 };
 
 export default function RootLayout({
@@ -27,6 +28,7 @@ export default function RootLayout({
         <AppLanguageProvider>
           {children}
         </AppLanguageProvider>
+        <ToastContainer />
       </body>
     </html>
   );

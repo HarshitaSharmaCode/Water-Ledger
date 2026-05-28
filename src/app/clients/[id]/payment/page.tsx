@@ -5,11 +5,7 @@ import React from 'react';
 import { PaymentEntryView } from './PaymentEntryView';
 
 export function generateStaticParams() {
-  return [
-    { id: 'client-1' },
-    { id: 'client-2' },
-    { id: 'client-3' },
-  ];
+  return [];
 }
 
 interface PageProps {

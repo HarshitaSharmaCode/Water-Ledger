@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
+const isStaticBuild = process.env.BUILD_STATIC === 'true';
+
 const nextConfig: NextConfig = {
-  output: "export",
+  ...(isStaticBuild ? { output: "export" } : {}),
   images: {
-    unoptimized: true, // Required for static exports
+    unoptimized: true,
   },
 };
 

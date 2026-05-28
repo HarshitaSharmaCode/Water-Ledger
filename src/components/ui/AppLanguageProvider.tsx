@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { useLanguageStore } from '@/store/language.store';
+import { AuthService } from '@/services/auth.service';
 import enMessages from '@/locales/en.json';
 import hiMessages from '@/locales/hi.json';
 
@@ -20,8 +21,13 @@ export const AppLanguageProvider: React.FC<AppLanguageProviderProps> = ({ childr
   const [mounted, setMounted] = useState(false);
 
   // Avoid SSR hydration mismatches by waiting for the client mount.
+  // Also initialise Supabase auth session once on mount.
   useEffect(() => {
     setMounted(true);
+    const unsubscribe = AuthService.init();
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const activeLang = mounted ? language : 'en';

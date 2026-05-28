@@ -7,16 +7,25 @@ import { Droplet, LogOut } from 'lucide-react';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { AuthService } from '@/services/auth.service';
 import { ROUTES } from '@/constants';
+import { useToastStore } from '@/store/toast.store';
+// ADD to imports
 
 export const Header: React.FC = () => {
   const t = useTranslations('Navbar');
   const tAuth = useTranslations('Auth');
   const router = useRouter();
 
+  const { addToast } = useToastStore();
+  const tToast = useTranslations('Toast');
+
   const handleLogout = async () => {
     await AuthService.logout();
+    addToast(tToast('logout'), 'success');
     router.push(ROUTES.LOGIN);
   };
+
+
+
 
   return (
     <header

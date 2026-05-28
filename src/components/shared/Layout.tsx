@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { LayoutDashboard, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './Header';
-import { AuthService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
 import { ROUTES } from '@/constants';
 
 interface LayoutProps {
@@ -18,18 +18,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const tCommon = useTranslations('Common');
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
+  const { session, userProfile, isLoading } = useAuthStore();
 
   useEffect(() => {
-    const authStatus = AuthService.isAuthenticated();
-    if (!authStatus) {
-      router.push(ROUTES.LOGIN);
-    } else {
-      setLoading(false);
+    if (isLoading) return;
+    if (!session) {
+      router.replace(ROUTES.LOGIN);
+      return;
     }
-  }, [router]);
+    if (!userProfile) {
+      router.replace(ROUTES.PROFILE_SETUP);
+    }
+  }, [isLoading, session, userProfile, router]);
 
-  if (loading) {
+  if (isLoading || !session || !userProfile) {
     return (
       <div
         className="flex flex-col flex-1 items-center justify-center min-h-screen"
@@ -50,7 +52,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navItems = [
     { label: t('dashboard'), path: ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { label: t('clients'),   path: ROUTES.CLIENTS,   icon: Users },
+    { label: t('clients'), path: ROUTES.CLIENTS, icon: Users },
   ];
 
   return (
@@ -62,7 +64,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Top Header */}
       <Header />
 
-      {/* Body — spacing tokens: --spacing-5 = 1.375rem, --spacing-8 = 2.25rem, --spacing-10 = 3rem */}
+      {/* Body */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-8 md:px-10 py-7 md:py-10 flex gap-6 md:gap-8">
 
         {/* Desktop Sidebar */}
@@ -96,14 +98,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   style={
                     isActive
                       ? {
-                          background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
-                          color: '#FFFFFF',
-                          boxShadow: '0 4px 12px rgba(10,25,49,0.25)',
-                        }
+                        background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                        color: '#FFFFFF',
+                        boxShadow: '0 4px 12px rgba(10,25,49,0.25)',
+                      }
                       : {
-                          color: '#1A3D63',
-                          background: 'transparent',
-                        }
+                        color: '#1A3D63',
+                        background: 'transparent',
+                      }
                   }
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -170,10 +172,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 style={
                   isActive
                     ? {
-                        background: 'linear-gradient(135deg, #1A3D63, #4A7FA7)',
-                        color: '#FFFFFF',
-                        boxShadow: '0 2px 8px rgba(74,127,167,0.4)',
-                      }
+                      background: 'linear-gradient(135deg, #1A3D63, #4A7FA7)',
+                      color: '#FFFFFF',
+                      boxShadow: '0 2px 8px rgba(74,127,167,0.4)',
+                    }
                     : { color: '#4A7FA7' }
                 }
               >

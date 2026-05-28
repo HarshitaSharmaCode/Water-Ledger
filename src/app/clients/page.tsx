@@ -6,26 +6,34 @@ import { useTranslations } from 'next-intl';
 import { Layout } from '@/components/shared/Layout';
 import { ClientService } from '@/services/client.service';
 import { ClientWithBalance } from '@/types/client.types';
-import { Search, UserPlus, Phone, MapPin, ChevronRight, X, Users } from 'lucide-react';
+import { Search, UserPlus, Phone, MapPin, ChevronRight, X, Users, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ROUTES } from '@/constants';
+import { useToastStore } from '@/store/toast.store';
 
 export const Clients: React.FC = () => {
   const t = useTranslations('Clients');
   const tCommon = useTranslations('Common');
+  const tToast = useTranslations('Toast');
   const router = useRouter();
+  const { addToast } = useToastStore();
 
   const [clients, setClients] = useState<ClientWithBalance[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Add client form state
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [defaultPrice, setDefaultPrice] = useState('500');
   const [formError, setFormError] = useState<string | null>(null);
   const [formSaving, setFormSaving] = useState(false);
+
+  // Delete state
+  const [deleteTarget, setDeleteTarget] = useState<ClientWithBalance | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchClients = async () => {
     setLoading(true);
@@ -63,11 +71,28 @@ export const Clients: React.FC = () => {
       });
       setName(''); setPhone(''); setAddress(''); setDefaultPrice('500');
       setIsModalOpen(false);
+      addToast(tToast('clientCreated'), 'success');
       await fetchClients();
     } catch {
       setFormError(t('saveError'));
     } finally {
       setFormSaving(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await ClientService.deleteClient(deleteTarget.id);
+      setDeleteTarget(null);
+      addToast(tToast('clientDeleted'), 'success');
+      await fetchClients();
+    } catch {
+      setDeleteTarget(null);
+      addToast(t('deleteError'), 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -90,7 +115,7 @@ export const Clients: React.FC = () => {
               className="text-xs font-bold mt-1 uppercase tracking-widest"
               style={{ color: '#4A7FA7' }}
             >
-              Client Ledger
+              {t('subtitle')}
             </p>
           </div>
           <button
@@ -169,11 +194,11 @@ export const Clients: React.FC = () => {
               return (
                 <div
                   key={client.id}
-                  onClick={() => router.push(`${ROUTES.CLIENTS}/${client.id}`)}
                   className="flex items-center justify-between px-4 py-4 cursor-pointer transition-colors"
                   style={{
                     borderBottom: idx < filteredClients.length - 1 ? '1px solid #F6FAFD' : 'none',
                   }}
+                  onClick={() => router.push(`${ROUTES.CLIENTS}/${client.id}`)}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLDivElement).style.background = '#F6FAFD';
                   }}
@@ -218,6 +243,29 @@ export const Clients: React.FC = () => {
                         ₹{client.default_price_per_tanker}/tanker
                       </span>
                     </div>
+
+                    {/* Delete button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(client);
+                      }}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg transition-all cursor-pointer shrink-0"
+                      style={{ color: '#B3CFE5', background: 'transparent' }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.background = '#FEF2F2';
+                        (e.currentTarget as HTMLButtonElement).style.color = '#EF4444';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLButtonElement).style.color = '#B3CFE5';
+                      }}
+                      aria-label={`Delete ${client.name}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
                     <ChevronRight className="w-4 h-4" style={{ color: '#B3CFE5' }} />
                   </div>
                 </div>
@@ -249,7 +297,6 @@ export const Clients: React.FC = () => {
                   boxShadow: '0 -8px 32px rgba(10,25,49,0.18)',
                 }}
               >
-                {/* Top accent stripe */}
                 <div
                   style={{
                     position: 'absolute',
@@ -262,13 +309,11 @@ export const Clients: React.FC = () => {
                   }}
                 />
 
-                {/* Drawer handle */}
                 <div
                   className="w-8 h-1 rounded-full mx-auto mt-1"
                   style={{ background: '#B3CFE5' }}
                 />
 
-                {/* Drawer header */}
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold" style={{ color: '#0A1931' }}>
                     {t('addClientTitle')}
@@ -291,7 +336,6 @@ export const Clients: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSaveClient} className="flex flex-col gap-4">
                   {formError && (
                     <div
@@ -396,6 +440,92 @@ export const Clients: React.FC = () => {
                     </button>
                   </div>
                 </form>
+
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Delete Confirm Modal */}
+        <AnimatePresence>
+          {deleteTarget && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center px-5"
+              style={{ background: 'rgba(10,25,49,0.6)' }}
+            >
+              <div
+                className="absolute inset-0"
+                onClick={() => { if (!isDeleting) setDeleteTarget(null); }}
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="relative w-full max-w-sm flex flex-col gap-5 z-10"
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #D0E4F2',
+                  borderRadius: '20px',
+                  padding: '28px 24px 24px',
+                  boxShadow: '0 16px 48px rgba(10,25,49,0.28)',
+                }}
+              >
+                {/* Top accent */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0,
+                    height: '3px',
+                    background: 'linear-gradient(90deg, #EF4444, #F97316)',
+                    borderRadius: '20px 20px 0 0',
+                  }}
+                />
+
+                {/* Icon + title */}
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div
+                    className="flex items-center justify-center w-12 h-12 rounded-2xl"
+                    style={{ background: '#FEF2F2' }}
+                  >
+                    <AlertTriangle className="w-6 h-6" style={{ color: '#EF4444' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold" style={{ color: '#0A1931' }}>
+                      {t('deleteConfirmTitle')}
+                    </h3>
+                    <p className="text-sm mt-2 leading-relaxed" style={{ color: '#4A7FA7' }}>
+                      {t('deleteConfirmMessage').replace('{name}', deleteTarget.name)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(null)}
+                    disabled={isDeleting}
+                    className="btn btn-secondary flex-1"
+                  >
+                    {tCommon('cancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteConfirm}
+                    disabled={isDeleting}
+                    className="btn flex-1 font-semibold"
+                    style={{
+                      background: isDeleting ? '#FCA5A5' : '#EF4444',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      cursor: isDeleting ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {isDeleting ? `${tCommon('loading')}` : t('deleteConfirmBtn')}
+                  </button>
+                </div>
 
               </motion.div>
             </div>

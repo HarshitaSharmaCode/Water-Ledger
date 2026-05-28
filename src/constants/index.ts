@@ -5,7 +5,9 @@ export const DEFAULT_TANKER_COUNT = 1;
 
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  PROFILE_SETUP: '/profile/setup',
   DASHBOARD: '/dashboard',
   CLIENTS: '/clients',
 };

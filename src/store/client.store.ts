@@ -1,101 +1,56 @@
 // src/store/client.store.ts
-// Zustand store for managing local client database. Persisted to localStorage.
+// Zustand store for client list state.
+// Pure state container — NO Supabase calls, NO local mutations that generate IDs.
+// All writes go through src/services/client.service.ts.
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { Client } from '@/types/client.types';
-import { LOCAL_STORAGE_KEYS } from '@/constants';
+import { Client, ClientWithBalance } from '@/types/client.types';
 
 interface ClientState {
-  clients: Client[];
+  /** Full client list with computed balances, fetched from Supabase. */
+  clients: ClientWithBalance[];
+  /** Whether a client list fetch is in progress. */
+  isLoading: boolean;
+  /** Error message from the last failed fetch, or null. */
+  error: string | null;
+  /** Search query for filtering client list in UI. */
   searchQuery: string;
+  /** Currently selected client ID for profile/ledger views. */
   selectedClientId: string | null;
+
+  setClients: (clients: ClientWithBalance[]) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
   setSearchQuery: (query: string) => void;
   setSelectedClientId: (id: string | null) => void;
-  addClient: (client: Omit<Client, 'id' | 'created_at' | 'updated_at'>) => Client;
-  updateClient: (id: string, updates: Partial<Omit<Client, 'id' | 'created_at' | 'updated_at'>>) => void;
-  deleteClient: (id: string) => void;
+  /** Optimistically update a single client in the list after an edit. */
+  updateClientInCache: (id: string, updates: Partial<Client>) => void;
+  /** Optimistically add a new client to the top of the list. */
+  addClientToCache: (client: ClientWithBalance) => void;
 }
 
-// Pre-seeded Indian clients for immediate CRM utility
-const INITIAL_CLIENTS: Client[] = [
-  {
-    id: 'client-1',
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
-    updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    name: 'Rajesh Kumar',
-    phone: '9876543210',
-    address: 'A-45, Vikas Nagar, New Delhi',
-    default_price_per_tanker: 500.00,
-  },
-  {
-    id: 'client-2',
-    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(), // 25 days ago
-    updated_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    name: 'Sharma Sweets',
-    phone: '8765432109',
-    address: '12, Main Market, Sector 15, Rohini',
-    default_price_per_tanker: 600.00,
-  },
-  {
-    id: 'client-3',
-    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 days ago
-    updated_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    name: 'Pooja Apartments',
-    phone: '7654321098',
-    address: 'Pocket C, Block 3, Mayur Vihar Phase 1',
-    default_price_per_tanker: 450.00,
-  },
-];
+export const useClientStore = create<ClientState>()((set) => ({
+  clients: [],
+  isLoading: false,
+  error: null,
+  searchQuery: '',
+  selectedClientId: null,
 
-export const useClientStore = create<ClientState>()(
-  persist(
-    (set) => ({
-      clients: INITIAL_CLIENTS,
-      searchQuery: '',
-      selectedClientId: null,
-      
-      setSearchQuery: (query) => set({ searchQuery: query }),
-      setSelectedClientId: (id) => set({ selectedClientId: id }),
-      
-      addClient: (clientData) => {
-        const newClient: Client = {
-          ...clientData,
-          id: `client-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        
-        set((state) => ({
-          clients: [newClient, ...state.clients],
-        }));
-        
-        return newClient;
-      },
-      
-      updateClient: (id, updates) => {
-        set((state) => ({
-          clients: state.clients.map((c) =>
-            c.id === id
-              ? {
-                  ...c,
-                  ...updates,
-                  updated_at: new Date().toISOString(),
-                }
-              : c
-          ),
-        }));
-      },
-      
-      deleteClient: (id) => {
-        set((state) => ({
-          clients: state.clients.filter((c) => c.id !== id),
-          selectedClientId: state.selectedClientId === id ? null : state.selectedClientId,
-        }));
-      },
-    }),
-    {
-      name: LOCAL_STORAGE_KEYS.CLIENTS,
-    }
-  )
-);
+  setClients: (clients) => set({ clients, isLoading: false, error: null }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error, isLoading: false }),
+  setSearchQuery: (searchQuery) => set({ searchQuery }),
+  setSelectedClientId: (selectedClientId) => set({ selectedClientId }),
+
+  updateClientInCache: (id, updates) =>
+    set((state) => ({
+      clients: state.clients.map((c) =>
+        c.id === id
+          ? { ...c, ...updates, updated_at: new Date().toISOString() }
+          : c
+      ),
+    })),
+
+  addClientToCache: (client) =>
+    set((state) => ({ clients: [client, ...state.clients] })),
+}));

@@ -8,6 +8,7 @@ import { ClientService } from '@/services/client.service';
 import { Client } from '@/types/client.types';
 import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import { ROUTES } from '@/constants';
+import { useToastStore } from '@/store/toast.store';
 
 interface EditClientViewProps {
   params: Promise<{ id: string }>;
@@ -55,6 +56,9 @@ export const EditClientView: React.FC<EditClientViewProps> = ({ params }) => {
     const priceNum = parseFloat(defaultPrice);
     if (isNaN(priceNum) || priceNum <= 0) return setFormError(t('validationPrice'));
 
+    const { addToast } = useToastStore();
+    const tToast = useTranslations('Toast');
+
     setFormSaving(true);
     try {
       await ClientService.updateClient(clientId, {
@@ -63,6 +67,7 @@ export const EditClientView: React.FC<EditClientViewProps> = ({ params }) => {
         address: address.trim(),
         default_price_per_tanker: priceNum,
       });
+      addToast(tToast('clientUpdated'), 'success');
       router.push(`${ROUTES.CLIENTS}/${clientId}`);
     } catch {
       setFormError(t('saveError'));

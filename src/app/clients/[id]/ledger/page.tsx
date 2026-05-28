@@ -5,11 +5,7 @@ import React from 'react';
 import { LedgerView } from './LedgerView';
 
 export function generateStaticParams() {
-  return [
-    { id: 'client-1' },
-    { id: 'client-2' },
-    { id: 'client-3' },
-  ];
+  return [];
 }
 
 interface PageProps {

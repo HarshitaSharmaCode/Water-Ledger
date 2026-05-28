@@ -10,6 +10,8 @@ import { Client } from '@/types/client.types';
 import { LocationType } from '@/types/order.types';
 import { ChevronLeft, Calendar, MapPin, PhoneCall, Truck, IndianRupee, Notebook } from 'lucide-react';
 import { ROUTES } from '@/constants';
+import { getTodayIST } from '@/utils/date.utils';
+import { useToastStore } from '@/store/toast.store';
 
 interface OrderEntryViewProps {
   params: Promise<{ id: string }>;
@@ -42,7 +44,7 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
       setClient(data);
       setPricePerTanker(data.default_price_per_tanker.toString());
       setCalledBy(data.name);
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getTodayIST());
       setLoading(false);
     };
     fetchClient();
@@ -62,6 +64,9 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
     if (tankers <= 0) return setFormError(t('validationTankers'));
     if (rate <= 0) return setFormError(t('validationPrice'));
 
+    const { addToast } = useToastStore();
+    const tToast = useTranslations('Toast');
+
     setFormSaving(true);
     try {
       await OrderService.createOrder({
@@ -75,8 +80,10 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
         order_amount: totalAmount,
         note: note.trim() || null,
       });
+      addToast(tToast('orderAdded'), 'success');
       router.push(`${ROUTES.CLIENTS}/${clientId}`);
     } catch {
+      addToast(tToast('orderFailed'), 'error');
       setFormError('Could not save order. Please try again.');
     } finally {
       setFormSaving(false);
@@ -191,16 +198,16 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
                   style={
                     locationType === 'home'
                       ? {
-                          background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
-                          border: '1px solid #0A1931',
-                          color: '#FFFFFF',
-                          boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
-                        }
+                        background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                        border: '1px solid #0A1931',
+                        color: '#FFFFFF',
+                        boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
+                      }
                       : {
-                          background: '#EEF5FB',
-                          border: '1px solid #D0E4F2',
-                          color: '#1A3D63',
-                        }
+                        background: '#EEF5FB',
+                        border: '1px solid #D0E4F2',
+                        color: '#1A3D63',
+                      }
                   }
                 >
                   {tCommon('home')}
@@ -212,16 +219,16 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
                   style={
                     locationType === 'other'
                       ? {
-                          background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
-                          border: '1px solid #0A1931',
-                          color: '#FFFFFF',
-                          boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
-                        }
+                        background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                        border: '1px solid #0A1931',
+                        color: '#FFFFFF',
+                        boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
+                      }
                       : {
-                          background: '#EEF5FB',
-                          border: '1px solid #D0E4F2',
-                          color: '#1A3D63',
-                        }
+                        background: '#EEF5FB',
+                        border: '1px solid #D0E4F2',
+                        color: '#1A3D63',
+                      }
                   }
                 >
                   {tCommon('other')}
@@ -318,7 +325,7 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
                 className="text-xs font-bold uppercase tracking-widest"
                 style={{ color: 'rgba(179,207,229,0.85)' }}
               >
-                Calculated Total
+                {t('calculatedTotal')}
               </span>
               <span className="text-xl font-black" style={{ color: '#FFFFFF' }}>
                 ₹{totalAmount.toLocaleString('en-IN')}

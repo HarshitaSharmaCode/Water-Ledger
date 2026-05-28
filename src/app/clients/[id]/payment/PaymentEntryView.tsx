@@ -9,6 +9,8 @@ import { PaymentService } from '@/services/payment.service';
 import { Client } from '@/types/client.types';
 import { ChevronLeft, Calendar, IndianRupee, Notebook } from 'lucide-react';
 import { ROUTES } from '@/constants';
+import { getTodayIST } from '@/utils/date.utils';
+import { useToastStore } from '@/store/toast.store';
 
 interface PaymentEntryViewProps {
   params: Promise<{ id: string }>;
@@ -35,7 +37,7 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
       const data = await ClientService.getClientById(clientId);
       if (!data) { router.push(ROUTES.CLIENTS); return; }
       setClient(data);
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getTodayIST());
       setLoading(false);
     };
     fetchClient();
@@ -49,6 +51,9 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
     const paymentAmt = parseFloat(amount) || 0;
     if (paymentAmt <= 0) return setFormError(t('validationAmount'));
 
+    const { addToast } = useToastStore();
+    const tToast = useTranslations('Toast');
+
     setFormSaving(true);
     try {
       await PaymentService.createPayment({
@@ -57,8 +62,10 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
         amount: paymentAmt,
         note: note.trim() || null,
       });
+      addToast(tToast('paymentAdded'), 'success');
       router.push(`${ROUTES.CLIENTS}/${clientId}`);
     } catch {
+      addToast(tToast('paymentFailed'), 'error');
       setFormError('Could not save payment. Please try again.');
     } finally {
       setFormSaving(false);
@@ -137,7 +144,7 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
               className="text-xs font-bold uppercase tracking-widest"
               style={{ color: 'rgba(179,207,229,0.85)' }}
             >
-              Payment Amount
+              {t('paymentAmountDisplay')}
             </span>
             <span className="text-2xl font-black" style={{ color: '#FFFFFF' }}>
               ₹{parseFloat(amount).toLocaleString('en-IN')}

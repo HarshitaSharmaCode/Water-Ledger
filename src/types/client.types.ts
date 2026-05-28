@@ -5,6 +5,7 @@ export interface Client {
   id: string;
   created_at: string;
   updated_at: string;
+  user_id: string;
   name: string;
   phone: string;
   address: string;

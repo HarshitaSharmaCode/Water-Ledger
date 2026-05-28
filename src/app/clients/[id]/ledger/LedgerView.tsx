@@ -42,7 +42,7 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
     if (!clientData) { router.push(ROUTES.CLIENTS); return; }
     setClient(clientData);
 
-    const orderData   = await OrderService.getOrdersByClient(clientId);
+    const orderData = await OrderService.getOrdersByClient(clientId);
     const paymentData = await PaymentService.getPaymentsByClient(clientId);
     setOrders(orderData);
     setPayments(paymentData);
@@ -83,18 +83,18 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
     );
   }
 
-  const absClosing  = Math.abs(ledgerResult.closing_balance).toLocaleString('en-IN');
-  const absOpening  = Math.abs(ledgerResult.opening_balance).toLocaleString('en-IN');
-  const hasFilters  = !!(fromDate || toDate);
+  const absClosing = Math.abs(ledgerResult.closing_balance).toLocaleString('en-IN');
+  const absOpening = Math.abs(ledgerResult.opening_balance).toLocaleString('en-IN');
+  const hasFilters = !!(fromDate || toDate);
   const filtersOpen = showFilters || hasFilters;
 
   /* Closing balance colour */
   const closingColor =
     ledgerResult.closing_balance > 0
-      ? '#1A3D63'
+      ? '#B45309'
       : ledgerResult.closing_balance < 0
-      ? '#0A1931'
-      : '#4A7FA7';
+        ? '#059669'
+        : '#6B7280';
 
   return (
     <Layout>
@@ -147,16 +147,16 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
               style={
                 filtersOpen
                   ? {
-                      background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
-                      border: '1px solid #0A1931',
-                      color: '#FFFFFF',
-                      boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
-                    }
+                    background: 'linear-gradient(135deg, #0A1931, #1A3D63)',
+                    border: '1px solid #0A1931',
+                    color: '#FFFFFF',
+                    boxShadow: '0 3px 10px rgba(10,25,49,0.25)',
+                  }
                   : {
-                      background: '#FFFFFF',
-                      border: '1px solid #D0E4F2',
-                      color: '#4A7FA7',
-                    }
+                    background: '#FFFFFF',
+                    border: '1px solid #D0E4F2',
+                    color: '#4A7FA7',
+                  }
               }
               title="Toggle Filters"
             >
@@ -250,7 +250,7 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
                 className="text-[9px] font-bold uppercase tracking-widest"
                 style={{ color: '#4A7FA7' }}
               >
-                Total Bills
+                {t('totalBills')}
               </span>
               <span
                 className="text-sm font-black mt-1"
@@ -268,7 +268,7 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
                 className="text-[9px] font-bold uppercase tracking-widest"
                 style={{ color: '#4A7FA7' }}
               >
-                Payments
+                {t('totalPayments')}
               </span>
               <span
                 className="text-sm font-black mt-1"
@@ -283,7 +283,7 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
                 className="text-[9px] font-bold uppercase tracking-widest"
                 style={{ color: '#4A7FA7' }}
               >
-                Closing Bal
+                {t('closingBal')}
               </span>
               <span
                 className="text-sm font-black mt-1"
@@ -333,23 +333,23 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
                       className="text-xs font-semibold"
                       style={{ color: '#0A1931' }}
                     >
-                      Opening Balance
+                      {t('openingBalance')}
                     </span>
                     <span
                       className="text-[10px] font-medium mt-0.5"
                       style={{ color: '#4A7FA7' }}
                     >
-                      Cumulative prior transactions
+                      C{t('cumulativePrior')}
                     </span>
                   </div>
                   <span
                     className="text-xs font-bold px-2.5 py-1 rounded-full"
                     style={
                       ledgerResult.opening_balance > 0
-                        ? { background: '#EEF5FB', border: '1px solid #D0E4F2', color: '#1A3D63' }
+                        ? { background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E' }
                         : ledgerResult.opening_balance < 0
-                        ? { background: '#0A1931', border: '1px solid #0A1931', color: '#FFFFFF' }
-                        : { background: '#F6FAFD', border: '1px solid #D0E4F2', color: '#4A7FA7' }
+                          ? { background: '#D1FAE5', border: '1px solid #6EE7B7', color: '#065F46' }
+                          : { background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }
                     }
                   >
                     ₹{absOpening} {ledgerResult.opening_balance > 0 ? 'Due' : ledgerResult.opening_balance < 0 ? 'Adv' : 'Clean'}
@@ -460,10 +460,10 @@ export const LedgerView: React.FC<LedgerViewProps> = ({ params }) => {
                           className="text-xs font-bold px-2 py-0.5 rounded-full mt-0.5"
                           style={
                             entry.running_balance > 0
-                              ? { background: '#EEF5FB', border: '1px solid #D0E4F2', color: '#1A3D63' }
+                              ? { background: '#FEF3C7', border: '1px solid #FDE68A', color: '#92400E' }
                               : entry.running_balance < 0
-                              ? { background: '#0A1931', border: '1px solid #0A1931', color: '#FFFFFF' }
-                              : { background: '#F6FAFD', border: '1px solid #D0E4F2', color: '#4A7FA7' }
+                                ? { background: '#D1FAE5', border: '1px solid #6EE7B7', color: '#065F46' }
+                                : { background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }
                           }
                         >
                           ₹{rowAbsRunning} {entry.running_balance > 0 ? 'Due' : entry.running_balance < 0 ? 'Adv' : ''}
