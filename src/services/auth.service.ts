@@ -37,6 +37,10 @@ export const AuthService = {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        // INITIAL_SESSION fires immediately on registration — before getSession()
+        // resolves and before the profile is fetched. Skip it here; the
+        // getSession() path above handles app-boot initialisation correctly.
+        if (_event === 'INITIAL_SESSION') return;
         setSession(session);
         if (!session) {
           useAuthStore.getState().setUserProfile(null);
