@@ -27,13 +27,12 @@ export const AuthService = {
 
     setLoading(true);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        AuthService.getUserProfile(session.user.id).then((profile) => {
-          useAuthStore.getState().setUserProfile(profile);
-        });
+        const profile = await AuthService.getUserProfile(session.user.id);
+        useAuthStore.getState().setUserProfile(profile);
       }
+      setSession(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

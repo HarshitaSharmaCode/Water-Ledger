@@ -88,9 +88,17 @@ export const Clients: React.FC = () => {
       setDeleteTarget(null);
       addToast(tToast('clientDeleted'), 'success');
       await fetchClients();
-    } catch {
+    } catch (err) {
       setDeleteTarget(null);
-      addToast(t('deleteError'), 'error');
+      if (err instanceof Error && err.message === 'PENDING_BALANCE') {
+        const amount = Math.abs(deleteTarget.pending_balance).toLocaleString('en-IN');
+        addToast(
+          t('deletePendingError', { name: deleteTarget.name, amount }),
+          'error'
+        );
+      } else {
+        addToast(t('deleteError'), 'error');
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -244,24 +252,32 @@ export const Clients: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Delete button */}
+                    {/* Delete button — disabled when client has a pending balance */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setDeleteTarget(client);
+                        if (client.balance_type !== 'pending') setDeleteTarget(client);
                       }}
-                      className="flex items-center justify-center w-8 h-8 rounded-lg transition-all cursor-pointer shrink-0"
-                      style={{ color: '#B3CFE5', background: 'transparent' }}
+                      disabled={client.balance_type === 'pending'}
+                      title={client.balance_type === 'pending' ? t('deletePendingError', { name: client.name, amount: Math.abs(client.pending_balance).toLocaleString('en-IN') }) : undefined}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg transition-all shrink-0"
+                      style={{
+                        color: client.balance_type === 'pending' ? '#D0E4F2' : '#B3CFE5',
+                        background: 'transparent',
+                        cursor: client.balance_type === 'pending' ? 'not-allowed' : 'pointer',
+                      }}
                       onMouseEnter={(e) => {
+                        if (client.balance_type === 'pending') return;
                         (e.currentTarget as HTMLButtonElement).style.background = '#FEF2F2';
                         (e.currentTarget as HTMLButtonElement).style.color = '#EF4444';
                       }}
                       onMouseLeave={(e) => {
+                        if (client.balance_type === 'pending') return;
                         (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
                         (e.currentTarget as HTMLButtonElement).style.color = '#B3CFE5';
                       }}
-                      aria-label={`Delete ${client.name}`}
+                      aria-label={client.balance_type === 'pending' ? `Cannot delete ${client.name} — balance pending` : `Delete ${client.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -496,7 +512,7 @@ export const Clients: React.FC = () => {
                       {t('deleteConfirmTitle')}
                     </h3>
                     <p className="text-sm mt-2 leading-relaxed" style={{ color: '#4A7FA7' }}>
-                      {t('deleteConfirmMessage').replace('{name}', deleteTarget.name)}
+                      {t('deleteConfirmMessage', { name: deleteTarget.name })}
                     </p>
                   </div>
                 </div>

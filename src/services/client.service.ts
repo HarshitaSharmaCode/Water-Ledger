@@ -141,9 +141,28 @@ export const ClientService = {
    * Deletes a client and all associated orders + payments.
    * Child records are deleted explicitly — CASCADE on FK is not assumed.
    * user_id guard is belt-and-suspenders on top of RLS.
+   *
+   * Throws "PENDING_BALANCE" if the client has an outstanding positive balance.
+   * Callers must handle this error and surface it to the user.
    */
   deleteClient: async (id: string): Promise<void> => {
     const userId = await getAuthUserId();
+
+    // Guard: block deletion if the client still has pending amount owed.
+    const [ordersCheck, paymentsCheck] = await Promise.all([
+      supabase.from('orders').select('*').eq('client_id', id),
+      supabase.from('payments').select('*').eq('client_id', id),
+    ]);
+    if (ordersCheck.error) throw new Error(ordersCheck.error.message);
+    if (paymentsCheck.error) throw new Error(paymentsCheck.error.message);
+
+    const ledgerCheck = calculateLedger(
+      (ordersCheck.data ?? []) as Order[],
+      (paymentsCheck.data ?? []) as Payment[]
+    );
+    if (ledgerCheck.closing_balance > 0) {
+      throw new Error('PENDING_BALANCE');
+    }
 
     const { error: ordersError } = await supabase
       .from('orders')

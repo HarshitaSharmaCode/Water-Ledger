@@ -21,7 +21,9 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
   const { id: clientId } = use(params);
   const t = useTranslations('Order');
   const tCommon = useTranslations('Common');
+  const tToast = useTranslations('Toast');
   const router = useRouter();
+  const { addToast } = useToastStore();
 
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,8 +66,7 @@ export const OrderEntryView: React.FC<OrderEntryViewProps> = ({ params }) => {
     if (tankers <= 0) return setFormError(t('validationTankers'));
     if (rate <= 0) return setFormError(t('validationPrice'));
 
-    const { addToast } = useToastStore();
-    const tToast = useTranslations('Toast');
+
 
     setFormSaving(true);
     try {

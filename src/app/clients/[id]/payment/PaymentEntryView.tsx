@@ -20,7 +20,9 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
   const { id: clientId } = use(params);
   const t = useTranslations('Payment');
   const tCommon = useTranslations('Common');
+  const tToast = useTranslations('Toast');
   const router = useRouter();
+  const { addToast } = useToastStore();
 
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,9 +52,6 @@ export const PaymentEntryView: React.FC<PaymentEntryViewProps> = ({ params }) =>
     if (!date) return setFormError('Select a valid date');
     const paymentAmt = parseFloat(amount) || 0;
     if (paymentAmt <= 0) return setFormError(t('validationAmount'));
-
-    const { addToast } = useToastStore();
-    const tToast = useTranslations('Toast');
 
     setFormSaving(true);
     try {

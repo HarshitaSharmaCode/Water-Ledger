@@ -112,7 +112,8 @@
     "deleteConfirmTitle": "Delete Client",
     "deleteConfirmMessage": "This will permanently delete {name} along with all their orders and payments. This cannot be undone.",
     "deleteConfirmBtn": "Yes, Delete",
-    "deleteError": "Could not delete client. Please try again."
+    "deleteError": "Could not delete client. Please try again.",
+    "deletePendingError": "Cannot delete {name} — ₹{amount} is still pending. Settle the balance first."
   },
   "Profile": {
     "title": "Client Profile",
